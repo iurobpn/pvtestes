@@ -101,7 +101,8 @@ void module_esc_run()
 	lastWakeTime = xTaskGetTickCount();
 
     /* Escrita dos escs */
-    c_io_blctrl_setSpeed(0, 20);
+	c_io_blctrl_setSpeed(0, 20);
+	c_io_blctrl_setSpeed(1, 20);
     //c_common_utils_delayus(10);
     //c_io_blctrl_setSpeed(1, 10 );
 

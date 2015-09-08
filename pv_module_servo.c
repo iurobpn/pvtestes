@@ -26,25 +26,19 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define MODULE_PERIOD	    10//ms
-#define USART_BAUDRATE     115200
+#define USART_BAUDRATE     666666
 #define QUEUE_SIZE 500
-#define LOG_SIZE 20
-#define LOG_WIDTH 100
 
 /* Private macro -------------------------------------------------------------*/
-#define LOG(error,detail,i) ({ i = (uint8_t) i % LOG_SIZE; \
-		c_io_herkulex_decodeError(LOGBUF[i], error, detail); \
-		i++; })
 
 /* Private variables ---------------------------------------------------------*/
 portTickType lastWakeTime;
 portTickType wakeTime;
-USART_TypeDef *USARTn = USART6;
+USART_TypeDef *USARTn = USART1;
 
 pv_msg_servo oServoMsg[2];
 
 uint8_t DATA[100];
-uint8_t LOGBUF[LOG_SIZE][LOG_WIDTH];
 int32_t size;// = sizeof(pv_msg_esc);
 uint8_t servo1_id;
 uint8_t servo2_id;
@@ -167,10 +161,10 @@ void module_servo_init()
 	servo2_id=252;
 
 	c_io_herkulex_init(USARTn,USART_BAUDRATE);
-	//c_io_herkulex_set_baudrate(servo1_id,666666);
-	//c_io_herkulex_set_baudrate(servo2_id,666666);
+	//c_io_herkulex_setBaudRate(servo1_id,666666);
+	//c_io_herkulex_setBaudRate(servo2_id,666666);
 	c_io_herkulex_config(servo1_id);
-	//c_io_herkulex_config(servo2_id);
+	c_io_herkulex_config(servo2_id);
 }
 
 /** \brief Função principal do módulo de data out.
@@ -193,7 +187,8 @@ void module_servo_run()
 	uint8_t l = 0;
 
 	float pos1 = 45*M_PI/180;
-	float pos2 = -pos1;
+	float pos2 = 135*M_PI/180;
+	//float pos2 = -pos1;
 	//c_io_herkulex_set_goal_position(servo1_id,0);
 
 	//c_io_herkulex_read_data(servo1_id);
@@ -227,7 +222,6 @@ void module_servo_run()
 			status_detail = c_io_herkulex_getStatusDetail();
 
 			if (status_error) {
-				LOG(status_error,status_detail,l);
 				//c_io_herkulex_clear(servo1_id);
 			}
 		} else {
@@ -240,7 +234,6 @@ void module_servo_run()
 			//oServoMsg[0].status=0;
 			oServoMsg[0].servo_id=servo1_id;
 		}
-
 
 		if (c_io_herkulex_readData(servo2_id)) {
 			/* Aquisição de dados do servo 1 */
@@ -255,7 +248,6 @@ void module_servo_run()
 			status_detail = c_io_herkulex_getStatusDetail();
 
 			if (status_error) {
-				LOG(status_error,status_detail,l);
 				//c_io_herkulex_clear(servo2_id);
 			}
 		} else {
@@ -300,18 +292,27 @@ void module_servo_run()
 		 * Aplicação de entradas nos servos
 		 */
 		//pwm=200;
-
+		const float delta_deg = deg2rad(90);
 		if ((heartBeat%200)==0) {
-			pos1*=-1;
-			//pos2*=-1;
-			//c_io_herkulex_set_goal_position2(servo1_id, pos1, servo2_id, pos1);
-			c_io_herkulex_setPosition(servo1_id, pos1);
-			//c_io_herkulex_set_goal_position(servo2_id, pos2);
+			float aux;
+			aux=pos1;
+			if (pos1) {
+				pos1 = 0;
+				pos2 = 0;
+			} else {
+				pos1 = -delta_deg;
+				pos2 = delta_deg;
+			}
 
+			c_io_herkulex_setPosition2Servos(servo1_id, pos1, servo2_id, pos2);
+			//c_io_herkulex_setPosition(servo1_id, pos1);
+			//c_io_herkulex_setPosition(servo2_id, pos1);
+			/*
 			if (pwm < 600)
 				pwm = 600;
 			else
 				pwm = 300;
+				*/
 		}
 		//c_io_herkulex_setTorque2Servos(servo1_id, pwm,servo2_id,-pwm);
 		//c_io_herkulex_setTorque(servo1_id, pwm);
