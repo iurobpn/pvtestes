@@ -34,7 +34,7 @@
 /* Private variables ---------------------------------------------------------*/
 portTickType lastWakeTime;
 portTickType wakeTime;
-USART_TypeDef *USARTn = USART1;
+static USART_TypeDef *USARTn = USART1;
 
 pv_msg_servo oServoMsg[2];
 
