@@ -53,7 +53,7 @@ void displaySensorDetails(void)
   sensor_t sensor;
   char tmp[20];
 
-  LSM303_accel_getSensor(&accel, &sensor);
+  c_io_lsm303Accel_getSensor(&accel, &sensor);
 
   c_common_usart_puts(USARTn,"----------- ACCELEROMETER ----------\n");
   c_common_usart_puts(USARTn,"Sensor:       ");
@@ -91,7 +91,7 @@ void displaySensorDetails(void)
   c_common_usart_puts(USARTn,"------------------------------------");
   c_common_usart_puts(USARTn,"\n\n");
 
-  L3GD20_getSensor(&gyro,&sensor);
+  c_io_l3gd20_getSensor(&gyro,&sensor);
   c_common_usart_puts(USARTn,"------------- GYROSCOPE -----------");
   c_common_usart_putchar(USARTn,'\n');
 
@@ -131,7 +131,7 @@ void displaySensorDetails(void)
   c_common_usart_puts(USARTn,"------------------------------------");
   c_common_usart_puts(USARTn,"\n\n");
 
-  LSM303_mag_getSensor(&mag, &sensor);
+  c_io_lsm303Mag_getSensor(&mag, &sensor);
   c_common_usart_puts(USARTn,"----------- MAGNETOMETER -----------");
   c_common_usart_putchar(USARTn,'\n');
 
@@ -170,7 +170,7 @@ void displaySensorDetails(void)
   c_common_usart_puts(USARTn,"------------------------------------");
   c_common_usart_puts(USARTn,"\n\n");
 
-  BMP085_getSensor(bmp,&sensor);
+  c_io_bmp180_getSensor(bmp,&sensor);
   c_common_usart_puts(USARTn,"-------- PRESSURE/ALTITUDE ---------");
   c_common_usart_putchar(USARTn,'\n');
 
@@ -234,31 +234,31 @@ void module_imu_init()
 	c_io_imuAdafruit_init(I2Cn);
 	c_common_usart6_init(BAUDRATE);
 
-	L3GD20_init(&gyro,20);
-	LSM303_accel_init(&accel,30301);
-	LSM303_mag_init(&mag,30302);
+	c_io_l3gd20_init(&gyro,20);
+	c_io_lsm303Accel_init(&accel,30301);
+	c_io_lsm303Mag_init(&mag,30302);
 	c_common_usart_puts(USARTn,"Adafruit 10DOF Tester");
 	c_common_usart_putchar(USARTn,'\n');
 
 	/* Initialise the sensors */
-	if(!LSM303_accel_begin(I2Cn)) {
+	if(!c_io_lsm303Accel_begin(I2Cn)) {
 		/* There was a problem detecting the ADXL345 ... check your connections */
 		c_common_usart_puts(USARTn,"Ooops, no LSM303 detected ... Check your wiring!");
 		c_common_usart_putchar(USARTn,'\n');
 		while(1);
 	}
-	if(!LSM303_mag_begin(&mag,I2Cn)) {
+	if(!c_io_lsm303Mag_begin(&mag,I2Cn)) {
 		/* There was a problem detecting the LSM303 ... check your connections */
 		c_common_usart_puts(USARTn,"Ooops, no LSM303 detected ... Check your wiring!");
 		c_common_usart_putchar(USARTn,'\n');
 		while(1);
 	}
-	if(!BMP085_begin(I2Cn,bmp)) {
+	if(!c_io_bmp180_init(I2Cn,bmp)) {
 		/* There was a problem detecting the BMP085 ... check your connections */
 		c_common_usart_puts(USARTn,"Ooops, no BMP085 detected ... Check your wiring or I2C ADDR!");
 		while(1);
 	}
-	if(!L3GD20_begin(&gyro,GYRO_RANGE_250DPS)) {
+	if(!c_io_l3gd20_begin(&gyro,GYRO_RANGE_250DPS)) {
 		/* There was a problem detecting the L3GD20 ... check your connections */
 		c_common_usart_puts(USARTn,"Ooops, no L3GD20 detected ... Check your wiring or I2C ADDR!");
 		while(1);
@@ -296,7 +296,7 @@ void module_imu_run()
 		sensors_event_t event;
 
 		/* Display the results (acceleration is measured in m/s^2) */
-		LSM303_accel_getEvent(&accel, &event);
+		c_io_lsm303Accel_getEvent(&accel, &event);
 		c_common_usart_puts(USARTn,"ACCEL ");
 		c_common_usart_puts(USARTn,"X: ");
 		c_common_utils_floatToString(event.acceleration.x,tmp,2);
@@ -314,7 +314,7 @@ void module_imu_run()
 		c_common_usart_putchar(USARTn,'\n');
 
 		/* Display the results (magnetic vector values are in micro-Tesla (uT)) */
-		LSM303_mag_getEvent(&mag, &event);
+		c_io_lsm303Mag_getEvent(&mag, &event);
 		c_common_usart_puts(USARTn,"MAG   ");
 		c_common_usart_puts(USARTn,"X: ");
 		c_common_utils_floatToString(event.magnetic.x,tmp,2);
@@ -332,7 +332,7 @@ void module_imu_run()
 		c_common_usart_putchar(USARTn,'\n');
 
 		/* Display the results (gyrocope values in rad/s) */
-		L3GD20_getEvent(&gyro, &event);
+		c_io_l3gd20_getEvent(&gyro, &event);
 		c_common_usart_puts(USARTn,"GYRO  ");
 		c_common_usart_puts(USARTn,"X: ");
 		c_common_utils_floatToString(event.gyro.x,tmp,2);
@@ -350,7 +350,7 @@ void module_imu_run()
 		c_common_usart_putchar(USARTn,'\n');
 
 		/* Display the pressure sensor results (barometric pressure is measure in hPa) */
-		BMP085_getEvent(bmp,&event);
+		c_io_bmp180_getEvent(bmp,&event);
 		if (event.pressure)
 		{
 			/* Display atmospheric pressure in hPa */
@@ -360,7 +360,7 @@ void module_imu_run()
 			c_common_usart_puts(USARTn," hPa, ");
 			/* Display ambient temperature in C */
 			float temperature;
-			BMP085_getTemperature(&temperature);
+			c_io_bmp180_getTemperature(&temperature);
 			c_common_utils_floatToString(event.temperature,tmp,2);
 			c_common_usart_puts(USARTn,tmp);
 			c_common_usart_puts(USARTn," C, ");
@@ -368,7 +368,7 @@ void module_imu_run()
 			/* Update this next line with the current SLP for better results      */
 			float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
 
-			float fl_tmp = BMP085_pressureToAltitude(seaLevelPressure,event.pressure);
+			float fl_tmp = c_io_bmp180_pressureToAltitude(seaLevelPressure,event.pressure);
 			c_common_utils_floatToString(fl_tmp,tmp,2);
 			c_common_usart_puts(USARTn,tmp);
 			c_common_usart_puts(USARTn," m");
