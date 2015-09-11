@@ -33,8 +33,6 @@
 portTickType lastWakeTime;
 char str[256];
 GPIOPin LED4;
-struct LSM303_accel accel;
-struct LSM303_mag mag;
 int32_t bmp = 18001;
 struct L3GD20 gyro;
 static USART_TypeDef *USARTn = USART6;
@@ -48,6 +46,7 @@ pv_msg_input oInputData;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+/*
 void displaySensorDetails(void)
 {
   sensor_t sensor;
@@ -210,7 +209,7 @@ void displaySensorDetails(void)
   c_common_usart_puts(USARTn,"\n\n");
 
 }
-
+*/
 void displaySensorData(void) {
 
 }
@@ -235,19 +234,17 @@ void module_imu_init()
 	c_common_usart6_init(BAUDRATE);
 
 	c_io_l3gd20_init(&gyro,20);
-	c_io_lsm303Accel_init(&accel,30301);
-	c_io_lsm303Mag_init(&mag,30302);
 	c_common_usart_puts(USARTn,"Adafruit 10DOF Tester");
 	c_common_usart_putchar(USARTn,'\n');
 
 	/* Initialise the sensors */
-	if(!c_io_lsm303Accel_begin(I2Cn)) {
+	if(!c_io_lsm303_initAccel(I2Cn)) {
 		/* There was a problem detecting the ADXL345 ... check your connections */
 		c_common_usart_puts(USARTn,"Ooops, no LSM303 detected ... Check your wiring!");
 		c_common_usart_putchar(USARTn,'\n');
 		while(1);
 	}
-	if(!c_io_lsm303Mag_begin(&mag,I2Cn)) {
+	if(!c_io_lsm303_initMag(I2Cn)) {
 		/* There was a problem detecting the LSM303 ... check your connections */
 		c_common_usart_puts(USARTn,"Ooops, no LSM303 detected ... Check your wiring!");
 		c_common_usart_putchar(USARTn,'\n');
@@ -265,7 +262,7 @@ void module_imu_init()
 	}
 
 	/* Display some basic information on this sensor */
-	displaySensorDetails();
+	//displaySensorDetails();
 }
 
 /** \brief Função principal do módulo de IO.
@@ -296,7 +293,7 @@ void module_imu_run()
 		sensors_event_t event;
 
 		/* Display the results (acceleration is measured in m/s^2) */
-		c_io_lsm303Accel_getEvent(&accel, &event);
+		c_io_lsm303_getDataAccel();
 		c_common_usart_puts(USARTn,"ACCEL ");
 		c_common_usart_puts(USARTn,"X: ");
 		c_common_utils_floatToString(event.acceleration.x,tmp,2);
@@ -314,7 +311,7 @@ void module_imu_run()
 		c_common_usart_putchar(USARTn,'\n');
 
 		/* Display the results (magnetic vector values are in micro-Tesla (uT)) */
-		c_io_lsm303Mag_getEvent(&mag, &event);
+		c_io_lsm303_getMagData();
 		c_common_usart_puts(USARTn,"MAG   ");
 		c_common_usart_puts(USARTn,"X: ");
 		c_common_utils_floatToString(event.magnetic.x,tmp,2);
@@ -350,7 +347,7 @@ void module_imu_run()
 		c_common_usart_putchar(USARTn,'\n');
 
 		/* Display the pressure sensor results (barometric pressure is measure in hPa) */
-		c_io_bmp180_getEvent(bmp,&event);
+		c_io_bmp180_getData(bmp,&event);
 		if (event.pressure)
 		{
 			/* Display atmospheric pressure in hPa */
