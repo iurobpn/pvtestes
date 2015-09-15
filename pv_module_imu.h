@@ -65,7 +65,8 @@
  /* proVANT includes */
 #include "c_io_blctrl.h"
 #include "c_io_rx24f.h" // Depois serao trocado pelo servo novo
-#include "c_io_imuAdafruit.h"
+//#include "c_io_imuAdafruit.h"
+#include "c_io_imu.h"
 #include "c_io_sonar.h"
 #include "c_rc_receiver.h"
 

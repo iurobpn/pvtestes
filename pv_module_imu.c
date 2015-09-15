@@ -27,6 +27,7 @@
 /* Private define ------------------------------------------------------------*/
 #define MODULE_PERIOD	   1000//ms
 #define BAUDRATE		115200
+#define ADAFRUIT 1
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -36,7 +37,7 @@ GPIOPin LED4;
 static USART_TypeDef *USARTn = USART6;
 static I2C_TypeDef *I2Cn;
 
-float attitude_quaternion[4]={1,0,0,0};
+static float attitude_quaternion[4]={1,0,0,0};
 
 
 /* Output Message */
@@ -44,173 +45,51 @@ pv_msg_input oInputData;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
-/*
-void displaySensorDetails(void)
+
+void displayDataDetails(float *accel, float *mag, float *gyro)
 {
-  sensor_t sensor;
-  char tmp[20];
+	char tmp[20];
 
-  c_io_lsm303Accel_getSensor(&accel, &sensor);
-
-  c_common_usart_puts(USARTn,"----------- ACCELEROMETER ----------\n");
-  c_common_usart_puts(USARTn,"Sensor:       ");
-  c_common_usart_puts(USARTn,sensor.name);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Driver Ver:   ");
-  c_common_utils_floatToString((float)sensor.version,tmp,0);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Unique ID:    ");
-  c_common_utils_floatToString((float)sensor.sensor_id,tmp,0);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Max Value:    ");
-  c_common_utils_floatToString(sensor.max_value,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," m/s^2");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Min Value:    ");
-  c_common_utils_floatToString(sensor.min_value,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," m/s^2");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Resolution:   ");
-  c_common_utils_floatToString(sensor.resolution,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," m/s^2");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"------------------------------------");
-  c_common_usart_puts(USARTn,"\n\n");
-
-  c_io_l3gd20_getSensor(&gyro,&sensor);
-  c_common_usart_puts(USARTn,"------------- GYROSCOPE -----------");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Sensor:       ");
-  c_common_usart_puts(USARTn,sensor.name);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Driver Ver:   ");
-  c_common_utils_floatToString((float)sensor.version,tmp,0);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Unique ID:    ");
-  c_common_utils_floatToString((float)sensor.sensor_id,tmp,0);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_putchar(USARTn,'\n');
+	//c_io_l3gd20_getGyroData(gyro);
+	//c_io_lsm303_getAccelData(accel);
+	//c_io_lsm303_getMagData(mag);
 
 
-  c_common_usart_puts(USARTn,"Max Value:    ");
-  c_common_utils_floatToString(sensor.max_value,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," rad/s");
-  c_common_usart_putchar(USARTn,'\n');
 
-  c_common_usart_puts(USARTn,"Min Value:    ");
-  c_common_utils_floatToString(sensor.min_value,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," rad/s");
-  c_common_usart_putchar(USARTn,'\n');
+	c_common_usart_puts(USARTn,"Acelerometro:\nx: ");
+	c_common_utils_floatToString(accel[0],tmp,6);
+	c_common_usart_puts(USARTn,tmp);
+	c_common_usart_puts(USARTn,"\ny: ");
+	c_common_utils_floatToString(accel[1],tmp,6);
+	c_common_usart_puts(USARTn,tmp);
+	c_common_usart_puts(USARTn,"\nz: ");
+	c_common_utils_floatToString(accel[2],tmp,6);
+	c_common_usart_puts(USARTn,tmp);
+	c_common_usart_puts(USARTn,"\n\n");
 
-  c_common_usart_puts(USARTn,"Resolution:   ");
-  c_common_utils_floatToString(sensor.resolution,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," rad/s");
-  c_common_usart_putchar(USARTn,'\n');
+	c_common_usart_puts(USARTn,"Magnetometro:\nx: ");
+	c_common_utils_floatToString(mag[0],tmp,6);
+	c_common_usart_puts(USARTn,tmp);
+	c_common_usart_puts(USARTn,"\ny: ");
+	c_common_utils_floatToString(mag[1],tmp,6);
+	c_common_usart_puts(USARTn,tmp);
+	c_common_usart_puts(USARTn,"\nz: ");
+	c_common_utils_floatToString(mag[2],tmp,6);
+	c_common_usart_puts(USARTn,tmp);
+	c_common_usart_puts(USARTn,"\n\n");
 
-  c_common_usart_puts(USARTn,"------------------------------------");
-  c_common_usart_puts(USARTn,"\n\n");
-
-  c_io_lsm303Mag_getSensor(&mag, &sensor);
-  c_common_usart_puts(USARTn,"----------- MAGNETOMETER -----------");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Sensor:       ");
-  c_common_usart_puts(USARTn,sensor.name);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Driver Ver:   ");
-  c_common_utils_floatToString((float)sensor.version,tmp,0);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Unique ID:    ");
-  c_common_utils_floatToString((float)sensor.sensor_id,tmp,0);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Max Value:    ");
-  c_common_utils_floatToString(sensor.max_value,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," uT");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Min Value:    ");
-  c_common_utils_floatToString((float)sensor.min_value,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," uT");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Resolution:   ");
-  c_common_utils_floatToString((float)sensor.resolution,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," uT");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"------------------------------------");
-  c_common_usart_puts(USARTn,"\n\n");
-
-  c_io_bmp180_getSensor(bmp,&sensor);
-  c_common_usart_puts(USARTn,"-------- PRESSURE/ALTITUDE ---------");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Sensor:       ");
-  c_common_usart_puts(USARTn,sensor.name);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Driver Ver:   ");
-  c_common_utils_floatToString((float)sensor.version,tmp,0);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Unique ID:    ");
-  c_common_utils_floatToString((float)sensor.sensor_id,tmp,0);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Max Value:    ");
-  c_common_utils_floatToString(sensor.max_value,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," hPa");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Min Value:    ");
-  c_common_utils_floatToString(sensor.min_value,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," hPa");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"Resolution:   ");
-  c_common_utils_floatToString(sensor.resolution,tmp,2);
-  c_common_usart_puts(USARTn,tmp);
-  c_common_usart_puts(USARTn," hPa");
-  c_common_usart_putchar(USARTn,'\n');
-
-  c_common_usart_puts(USARTn,"------------------------------------");
-  c_common_usart_puts(USARTn,"\n\n");
-
+	c_common_usart_puts(USARTn,"Giroscopio:\nx: ");
+	c_common_utils_floatToString(gyro[0],tmp,6);
+	c_common_usart_puts(USARTn,tmp);
+	c_common_usart_puts(USARTn,"\ny: ");
+	c_common_utils_floatToString(gyro[1],tmp,6);
+	c_common_usart_puts(USARTn,tmp);
+	c_common_usart_puts(USARTn,"\nz: ");
+	c_common_utils_floatToString(gyro[2],tmp,6);
+	c_common_usart_puts(USARTn,tmp);
+	c_common_usart_puts(USARTn,"\n\n");
 }
-*/
-void displaySensorData(void) {
 
-}
 /* Exported functions definitions --------------------------------------------*/
 
 /** \brief Inicializacao componentes de IO.
@@ -228,36 +107,39 @@ void module_imu_init()
 
 	/* Inicialização da imu */
 	//c_common_i2c_init(I2Cn);
-	c_io_imuAdafruit_init(I2Cn);
+	//c_io_imuAdafruit_init(I2Cn);
+	c_io_imu_config(ADAFRUIT);
+	imu_init(I2Cn);
 	c_common_usart6_init(BAUDRATE);
 
 	c_common_usart_puts(USARTn,"Adafruit 10DOF Tester");
 	c_common_usart_putchar(USARTn,'\n');
 
 	/* Initialise the sensors */
+	/*
 		if(!c_io_lsm303_initAccel(I2Cn)) {
-			/* There was a problem detecting the ADXL345 ... check your connections */
+			// There was a problem detecting the ADXL345 ... check your connections
 			c_common_usart_puts(USARTn,"Ooops, no LSM303 detected ... Check your wiring!");
 			c_common_usart_putchar(USARTn,'\n');
 			while(1);
 		}
 		if(!c_io_lsm303_initMag(I2Cn)) {
-			/* There was a problem detecting the LSM303 ... check your connections */
+			// There was a problem detecting the LSM303 ... check your connections
 			c_common_usart_puts(USARTn,"Ooops, no LSM303 detected ... Check your wiring!");
 			c_common_usart_putchar(USARTn,'\n');
 			while(1);
 		}
-		if(!c_io_bmp180_init(I2Cn,BMP180_MODE_ULTRAHIGHRES)) {
-			/* There was a problem detecting the BMP085 ... check your connections */
+		if(!c_io_bmp085_init(I2Cn,BMP085_MODE_ULTRAHIGHRES)) {
+			// There was a problem detecting the BMP085 ... check your connections
 			c_common_usart_puts(USARTn,"Ooops, no BMP085 detected ... Check your wiring or I2C ADDR!");
 			while(1);
 		}
-		if(!c_io_l3gd20_init(GYRO_RANGE_250DPS)) {
-			/* There was a problem detecting the L3GD20 ... check your connections */
+		if(!c_io_l3gd20_init(I2Cn,GYRO_RANGE_250DPS)) {
+			// There was a problem detecting the L3GD20 ... check your connections
 			c_common_usart_puts(USARTn,"Ooops, no L3GD20 detected ... Check your wiring or I2C ADDR!");
 			while(1);
 		}
-
+*/
 	/* Display some basic information on this sensor */
 	//displaySensorDetails();
 }
@@ -274,6 +156,8 @@ void module_imu_run()
 	unsigned int heartBeat=0;
 	char tmp[20];
   	/*Dados usados no sonar*/
+	float accel[3], mag[3], gyro[3];
+	long *ts;
 
 
   	while(1) {
@@ -290,6 +174,9 @@ void module_imu_run()
 
 		/* toggle pin for debug */
 		c_common_gpio_toggle(LED4);
+		//c_io_imuAdafruit_getRaw(accel,gyro,mag,ts);
+		imu_getRaw(accel,gyro,mag,ts);
+		displayDataDetails(accel,mag,gyro);
 
 		/* Realiza o trabalho de mutex */
 		//if(pv_interface_in.oInputData != 0)
