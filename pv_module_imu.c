@@ -9,6 +9,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "pv_module_imu.h"
+#include "c_io_imuAdafruit.h"
 
 /** @addtogroup ProVANT_app
   * @{
@@ -26,7 +27,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define MODULE_PERIOD	   1000//ms
-#define BAUDRATE		115200
+#define BAUDRATE		500000
 #define ADAFRUIT 1
 
 /* Private macro -------------------------------------------------------------*/
@@ -34,10 +35,10 @@
 portTickType lastWakeTime;
 char str[256];
 GPIOPin LED4;
-static USART_TypeDef *USARTn = USART6;
+static USART_TypeDef *USARTn = USART2;
 static I2C_TypeDef *I2Cn;
 
-static float attitude_quaternion[4]={1,0,0,0};
+//static float attitude_quaternion[4]={1,0,0,0};
 
 
 /* Output Message */
@@ -53,8 +54,6 @@ void displayDataDetails(float *accel, float *mag, float *gyro)
 	//c_io_l3gd20_getGyroData(gyro);
 	//c_io_lsm303_getAccelData(accel);
 	//c_io_lsm303_getMagData(mag);
-
-
 
 	c_common_usart_puts(USARTn,"Acelerometro:\nx: ");
 	c_common_utils_floatToString(accel[0],tmp,6);
@@ -107,10 +106,10 @@ void module_imu_init()
 
 	/* Inicialização da imu */
 	//c_common_i2c_init(I2Cn);
-	//c_io_imuAdafruit_init(I2Cn);
-	c_io_imu_config(ADAFRUIT);
-	imu_init(I2Cn);
-	c_common_usart6_init(BAUDRATE);
+	c_io_imuAdafruit_init(I2Cn);
+	//c_io_imu_config(ADAFRUIT);
+	//imu_init(I2Cn);
+	c_common_usart2_init(BAUDRATE);
 
 	c_common_usart_puts(USARTn,"Adafruit 10DOF Tester");
 	c_common_usart_putchar(USARTn,'\n');
@@ -174,8 +173,8 @@ void module_imu_run()
 
 		/* toggle pin for debug */
 		c_common_gpio_toggle(LED4);
-		//c_io_imuAdafruit_getRaw(accel,gyro,mag,ts);
-		imu_getRaw(accel,gyro,mag,ts);
+		c_io_imuAdafruit_getRaw(accel,gyro,mag,ts);
+		//imu_getRaw(accel,gyro,mag,ts);
 		displayDataDetails(accel,mag,gyro);
 
 		/* Realiza o trabalho de mutex */

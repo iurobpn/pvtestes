@@ -11,8 +11,8 @@
   *****************************************************************************/
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef PV_MODULE_IN_H
-#define PV_MODULE_IN_H
+#ifndef PV_MODULE_IN2_H
+#define PV_MODULE_IN2_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -23,11 +23,11 @@
     * Se ENABLE_* 1 então tal modulo será utilizado
     *
     */
-//#define ENABLE_IMU		1
-//#define ENABLE_SERVO	0
-//#define ENABLE_ESC		0
-//#define ENABLE_SONAR	0
-#define ENABLE_DEBUG	1
+#define ENABLE_IMU
+#define ENABLE_SERVO
+#define ENABLE_ESC
+#define ENABLE_SONAR
+#define ENALBE_DEBUG
 
  /*Def da IMU*/
 #define ATTITUDE_MINIMUM_STEP	0.01// Radians. Minimum change in angle that is passed to the controller
@@ -64,12 +64,10 @@
 
  /* proVANT includes */
 #include "c_io_blctrl.h"
-#include "c_io_rx24f.h" // Depois serao trocado pelo servo novo
-//#include "c_io_imuAdafruit.h"
+#include "c_io_servos.h"
 #include "c_io_imu.h"
 #include "c_io_sonar.h"
 #include "c_rc_receiver.h"
-
 
 #include "pv_typedefs.h"
 #include "c_datapr_MultWii.h"
@@ -80,12 +78,16 @@
  #include "c_datapr_filter.h"
 
 /* Exported types ------------------------------------------------------------*/
+struct pv_interface_in
+{
+  xQueueHandle oInputData;  
+} pv_interface_in;
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions ------------------------------------------------------- */
-void module_imu_init();
-void module_imu_run();
+void module_in_init();
+void module_in_run();
 
 #ifdef __cplusplus
 }

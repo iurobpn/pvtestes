@@ -36,6 +36,10 @@
  {
    xQueueHandle iServoOutput;
  } pv_interface_serial;
+ struct pv_interface_do
+ {
+   xQueueHandle iInputData;
+ } pv_interface_do;
 
 /* Exported constants --------------------------------------------------------*/
 #define SERIAL_TEST 0

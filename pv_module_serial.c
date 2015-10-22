@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "pv_module_in.h"
+
 /** @addtogroup ProVANT_app
   * @{
   */
@@ -42,6 +44,7 @@ pv_msg_servo servo_out_buffer[20];
 uint8_t BUFFER[100];
 int32_t msg_size;// = sizeof(pv_msg_esc);
 uint8_t size;
+pv_msg_input iInputData;
 //pv_msg_input iInputData;
 //pv_msg_controlOutput iControlOutputData;
 //GPIOPin debugPin;
@@ -82,6 +85,7 @@ void module_serial_init()
 
 	/* Reserva o local de memoria compartilhado */
 	//iEscQueueData = xQueueCreate(1, sizeof(pv_msg_esc));
+	pv_interface_do.iInputData = xQueueCreate(1, sizeof(pv_msg_input));
 
 	/* Pin for debug */
 	//debugPin = c_common_gpio_init(GPIOE, GPIO_Pin_13, GPIO_Mode_OUT);
@@ -103,6 +107,17 @@ void stub() {
 	BUFFER[16]=cksum2(BUFFER[15]);
 }
 
+void stub2(char *str) {
+	//codigo de teste
+	int n = strlen(str);
+	BUFFER[0]=0xFF;
+	BUFFER[1]=0xFF;
+	BUFFER[2] = n + 3;//3 float(32bits) + 1 byte de tamanho, +2 de checksum
+	memcpy((BUFFER + 3), &str,n);
+	BUFFER[3 + n] = cksum1(BUFFER);
+	BUFFER[4 + n] = cksum2(BUFFER[28]);
+}
+
 /** \brief Função principal do módulo de data out.
   * @param  None
   * @retval None
@@ -117,6 +132,8 @@ void module_serial_run()
 		lastWakeTime = xTaskGetTickCount();
 		heartBeat++;
 #if SERIAL_TEST
+		char str[] = "puta que pariu nas trave!";
+		//stub2(str);
 		stub();
 		send_data(BUFFER[2]+2);
 		xStatus=0;
@@ -131,9 +148,37 @@ void module_serial_run()
 			xStatus = 0; //juntar a parte inferior
 #endif
 
-		if (xStatus) {
+		if (!xStatus) {
 			send_queue();
 		}
+		xQueueReceive(pv_interface_do.iInputData, &iInputData, 0);
+		char str[12];
+#ifdef ENABLE_SONAR
+		float z = iInputData.position.z;
+		c_common_utils_floatToString(z,str,6);
+		c_common_usart_puts(USARTx,str);
+#endif
+
+#ifdef ENABLE_IMU
+		float *gyrRaw = iInputData.imuOutput.gyrRaw;
+		c_common_utils_floatToString(gyrRaw[0],str,6);
+		c_common_usart_puts(USARTx,"Roll: ");
+		c_common_usart_puts(USARTx,str);
+		c_common_usart_puts(USARTx,"\n");
+
+		c_common_utils_floatToString(gyrRaw[1],str,6);
+		c_common_usart_puts(USARTx,"Pitch: ");
+		c_common_usart_puts(USARTx,str);
+		c_common_usart_puts(USARTx,"\n");
+
+		c_common_utils_floatToString(gyrRaw[2],str,6);
+		c_common_usart_puts(USARTx,"Yaw: ");
+		c_common_usart_puts(USARTx,str);
+		c_common_usart_puts(USARTx,"\n\n");
+#endif
+
+		//xQueue
+
 
 #if TESTE_FINITO
 		if (xKill)
