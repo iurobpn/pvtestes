@@ -50,7 +50,10 @@ float velocity_controller(float r, float y);
 float velocity_feedforward(float r);
 int16_t saturate(float x, const float max);
 int16_t get_stepped_pwm(int heartBeat, int16_t pwm);
+void set_baudrate();
+void calibrate(uint8_t servo_id);
 int check_outlier(int new,int sec);
+void set_calibration_difference(uint8_t servo_id, uint8_t calib_diff);
 
 /* Private functions ---------------------------------------------------------*/
 float position_controller(float r, float y)
@@ -161,11 +164,49 @@ void module_servo_init()
 	servo2_id=252;
 
 	c_io_herkulex_init(USARTn,USART_BAUDRATE);
-	//c_io_herkulex_setBaudRate(servo1_id,666666);
-	//c_io_herkulex_setBaudRate(servo2_id,666666);
+
 	c_io_herkulex_config(servo1_id);
 	c_io_herkulex_config(servo2_id);
+
+	//calibrate(servo1_id);
+	//calibrate(servo2_id);
+	uint8_t data = 0;
+	//set_calibration_difference(servo1_id,data);
+	c_io_herkulex_setPosition(servo2_id,0);
+	c_io_herkulex_setPosition(servo1_id,0);
 }
+
+void set_baudrate()
+{
+	c_io_herkulex_setBaudRate(servo1_id,666666);
+	c_io_herkulex_setBaudRate(servo2_id,666666);
+}
+
+void calibrate(uint8_t servo_id)
+{
+	/* Calibra o servo 1 */
+	uint8_t data[2];
+	c_io_herkulex_read(RAM,servo_id,REG_CALIBRATION_DIFF,1);
+	int8_t calib_dif = c_io_herkulex_getData(0);
+	c_io_herkulex_read(RAM,servo_id,REG_CALIBRATED_POS,2);
+	data[0] = c_io_herkulex_getData(0);
+	data[1] = c_io_herkulex_getData(1);
+	uint16_t calib_pos = data2raw(data);
+
+	c_io_herkulex_read(RAM,servo_id,REG_ABSOLUTE_POS,2);
+	data[1] = c_io_herkulex_getData(1);
+	data[0] = c_io_herkulex_getData(0);
+	uint16_t abs_pos = data2raw(data);
+	calib_dif = abs_pos - 512;
+	set_calibration_difference(servo_id,calib_dif);
+}
+
+void set_calibration_difference(uint8_t servo_id, uint8_t calib_diff)
+{
+	c_io_herkulex_write(RAM,servo_id,REG_CALIBRATION_DIFF,1,&calib_diff);
+	c_io_herkulex_write(EEP,servo_id,EEP_CALIBRATION_DIFF,1,&calib_diff);
+}
+
 
 /** \brief Função principal do módulo de data out.
   * @param  None
