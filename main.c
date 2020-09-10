@@ -91,8 +91,8 @@ void blink_led_task(void *pvParameters)
   #ifdef STM32F4_H407
     LED_builtin = c_common_gpio_init(GPIOC, GPIO_Pin_13, GPIO_Mode_OUT);
   #else
-    LED_builtin = c_common_gpio_init(GPIOA, GPIO_Pin_7, GPIO_Mode_OUT);
-    LED_builtin2 = c_common_gpio_init(GPIOB, GPIO_Pin_1, GPIO_Mode_OUT);
+    LED_builtin = c_common_gpio_init(GPIOA, GPIO_Pin_12, GPIO_Mode_OUT);
+    LED_builtin2 = c_common_gpio_init(GPIOB, GPIO_Pin_14, GPIO_Mode_OUT);
     c_common_gpio_toggle(LED_builtin2);
   #endif
     while(1) {
@@ -156,37 +156,37 @@ int main(void)
 
 #if !SERIAL_TEST
 	/* Init modules */
-	//module_esc_init();
-	module_servo_init();
-	//module_imu_init();
-	//module_in_init();
+	/* module_esc_init(); */
+	/* module_servo_init(); */
+	/* module_imu_init(); */
+	/* module_in_init(); */
 #endif
 #if !SERVO_IN_TEST
-	//module_serial_init();
+	/* module_serial_init(); */
 #endif
 	/* Connect modules: interface1.o* = interface2.i* */
-	pv_interface_do.iInputData  = pv_interface_in.oInputData;
-	//pv_interface_co.iInputData  = pv_interface_in.oInputData;
-	//pv_interface_do.iControlOutputData  = pv_interface_co.oControlOutputData;
+	/* pv_interface_do.iInputData  = pv_interface_in.oInputData; */
+	/* pv_interface_co.iInputData  = pv_interface_in.oInputData; */
+	/* pv_interface_do.iControlOutputData  = pv_interface_co.oControlOutputData; */
 #if !SERVO_IN_TEST && !SERIAL_TEST
-	//pv_interface_serial.iServoOutput=pv_interface_servo.oServoOutput;
+	/* pv_interface_serial.iServoOutput=pv_interface_servo.oServoOutput; */
 #endif
-	//iEscQueueData = oEscQueueData;
+	/* iEscQueueData = oEscQueueData; */
 	/* create tasks
 	 * Prioridades - quanto maior o valor, maior a prioridade
 	 */
 	xTaskCreate(blink_led_task, (signed char *)"Blink led", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
 #if !SERIAL_TEST
-	//xTaskCreate(arduino_i2c_task, (signed char *)"Arduino", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL);
-	//xTaskCreate(module_esc_task, (signed char *)"ESC", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+3, NULL);
-	xTaskCreate(module_servo_task, (signed char *)"Servo", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL);
-	//xTaskCreate(module_imu_task, (signed char *)"IMU", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL);
-	//xTaskCreate(module_in_task, (signed char *)"IMU", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL);
+	/* xTaskCreate(arduino_i2c_task, (signed char *)"Arduino", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL); */
+	/* xTaskCreate(module_esc_task, (signed char *)"ESC", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+3, NULL); */
+	/* xTaskCreate(module_servo_task, (signed char *)"Servo", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL); */
+	/* xTaskCreate(module_imu_task, (signed char *)"IMU", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL); */
+	/* xTaskCreate(module_in_task, (signed char *)"IMU", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL); */
 #endif
 #if !SERVO_IN_TEST
-	//xTaskCreate(module_serial_task, (signed char *)"Serial", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL);
+	/* xTaskCreate(module_serial_task, (signed char *)"Serial", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+2, NULL); */
 #endif
-	//xTaskCreate(sonar_task, (signed char *)"Sonar task", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL);
+	/* xTaskCreate(sonar_task, (signed char *)"Sonar task", configMINIMAL_STACK_SIZE, (void *)NULL, tskIDLE_PRIORITY+1, NULL); */
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();

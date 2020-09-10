@@ -25,7 +25,8 @@
 #include "c_common_gpio.h"
 #include "c_common_uart.h"
 #include "c_common_utils.h"
-#include "c_io_herkulex.h"
+// #include "c_io_herkulex.h"
+#include "c_io_servos.h"
 #include "pv_typedefs.h"
 
 
@@ -35,9 +36,9 @@
  //xQueueHandle iEscOutputData;
 
 struct pv_interface_servo
- {
+{
    xQueueHandle oServoOutput;
- } pv_interface_servo;
+} pv_interface_servo;
 
 /* Exported constants --------------------------------------------------------*/
 #define SERVO_IN_TEST 0

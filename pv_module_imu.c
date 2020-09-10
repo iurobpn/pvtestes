@@ -43,6 +43,7 @@ static I2C_TypeDef *I2Cn;
 
 /* Output Message */
 pv_msg_input oInputData;
+pv_msg_servo oServoData;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -173,7 +174,7 @@ void module_imu_run()
 
 		/* toggle pin for debug */
 		c_common_gpio_toggle(LED4);
-		c_io_imuAdafruit_getRaw(accel,gyro,mag,ts);
+		c_io_imuAdafruit_getRaw(accel,gyro,mag);
 		//imu_getRaw(accel,gyro,mag,ts);
 		displayDataDetails(accel,mag,gyro);
 

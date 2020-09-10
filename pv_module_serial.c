@@ -29,67 +29,82 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define MODULE_PERIOD	    100//ms
-//#define USART_BAUDRATE     460800
-#define USART_BAUDRATE     500000
+#define USART_BAUDRATE     460800
+/* #define USART_BAUDRATE     500000 */
 
 
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-portTickType lastWakeTime;
-USART_TypeDef *USARTx = USART2;
+static portTickType lastWakeTime;
+static USART_TypeDef *USART_beagle = USART2;
+static USART_TypeDef *USART_pc = USART1;
 //extern xQueueHandle iEscQueueData;
-pv_msg_servo iServoOutput;
-pv_msg_servo servo_out_buffer[20];
-uint8_t BUFFER[100];
-int32_t msg_size;// = sizeof(pv_msg_esc);
-uint8_t size;
-pv_msg_input iInputData;
+static pv_msg_servo iServoOutput;
+static pv_msg_servo servo_out_buffer[20];
+static uint8_t BUFFER[100];
+static int32_t msg_size;// = sizeof(pv_msg_esc);
+static uint8_t size;
+static pv_msg_input iInputData;
 //pv_msg_input iInputData;
 //pv_msg_controlOutput iControlOutputData;
 //GPIOPin debugPin;
 /* Private function prototypes -----------------------------------------------*/
-uint16_t send_queue();
-/* Private functions ---------------------------------------------------------*/
-void send_data(uint8_t size);
+static uint16_t send_queue();
+static void send_data(USART_TypeDef *usart, uint8_t size);
 void serialize_servo_msg(pv_msg_servo msg);
-uint8_t cksum1(uint8_t buffer[]);
-uint8_t cksum2(uint8_t checksum1);
-void stub();
-/* Exported functions definitions --------------------------------------------*/
-
-/** \brief Inicializacao do módulo de data out.
-  *
-  * Instancia as Queues de comunicação inter-thread.
-  * @param  None
-  * @retval None
-  */
-void module_serial_init()
+static uint8_t cksum1(uint8_t buffer[]);
+static uint8_t cksum2(uint8_t checksum1);
+static void stub();
+void stub2(char *str);
+uint8_t reads(USART_TypeDef *usart, uint8_t *buffer);
+/* Private functions ---------------------------------------------------------*/
+uint16_t send_queue()
 {
-	/* Inicia a usart2 */
-	if (USARTx==USART1) {
-		c_common_usart1_init(USART_BAUDRATE);
-	} else if (USARTx==USART2) {
-		c_common_usart2_init(USART_BAUDRATE);
-	} else if (USARTx==USART3) {
-		c_common_usart3_init(USART_BAUDRATE);
-	} else if (USARTx==USART6) {
-		c_common_usart6_init(USART_BAUDRATE);
+	uint16_t xStatus = 0, i, queue_size = 1;
+	while (uxQueueMessagesWaiting(pv_interface_serial.iServoOutput)>0)
+	{
+		xStatus = xQueueReceive(pv_interface_serial.iServoOutput,&iServoOutput,1/portTICK_RATE_MS);
+		if (xStatus)
+			add_servo_to_buffer(iServoOutput);
 	}
-	//stub();
-//#if SERIAL_TEST
-//	c_io_herkulex_init(USARTx,USART_BAUDRATE);
-//#endif
+	prepare_buffer();
+	send_data(USART_pc, BUFFER[2]+2);
+	clear_buffer();
+	return 0;
+}
 
+void send_data(USART_TypeDef *usart, uint8_t size)
+{
+	for (int i = 0; i < size ; ++i)
+		c_common_usart_putchar(usart,BUFFER[i]);
+}
 
+void serialize_servo_msg(pv_msg_servo msg)
+{
+	int msg_size = sizeof(pv_msg_servo);
+	BUFFER[0]=0xFF;
+	BUFFER[1]=0xFF;
+	BUFFER[2]=msg_size+3;
+	memcpy((BUFFER+3),&msg,msg_size);
+	BUFFER[msg_size+3]=cksum1(BUFFER);
+	BUFFER[msg_size+4]=cksum2(BUFFER[msg_size+3]);
+}
 
-	/* Reserva o local de memoria compartilhado */
-	//iEscQueueData = xQueueCreate(1, sizeof(pv_msg_esc));
-	pv_interface_do.iInputData = xQueueCreate(1, sizeof(pv_msg_input));
+uint8_t cksum1(uint8_t buffer[]) {
+  uint8_t i, chksum=0;
+  uint8_t n = BUFFER[2];//-2-> tira o checksum  2->por começar em buffer[2]
+  /* o buffer é passado inteiro, com o cabeçalho */
+  for(i=2;i<n;i++) {
+    chksum=chksum^buffer[i];
+  }
 
-	/* Pin for debug */
-	//debugPin = c_common_gpio_init(GPIOE, GPIO_Pin_13, GPIO_Mode_OUT);
-	size = 0;
+  return chksum&0xFE;
+}
+
+uint8_t cksum2(uint8_t checksum1)
+{
+	return (~checksum1) & 0xFE;
 }
 
 void stub() {
@@ -117,6 +132,64 @@ void stub2(char *str) {
 	BUFFER[3 + n] = cksum1(BUFFER);
 	BUFFER[4 + n] = cksum2(BUFFER[28]);
 }
+
+uint8_t reads(USART_TypeDef *usart, uint8_t *buffer) {
+	uint16_t i = 0;
+    while (c_common_usart_available(usart)) {
+		buffer[i] = c_common_usart_read(usart);
+		i++;
+	}
+	return i;
+}
+
+/* Exported functions definitions --------------------------------------------*/
+
+/** \brief Inicializacao do módulo de data out.
+  *
+  * Instancia as Queues de comunicação inter-thread.
+  * @param  None
+  * @retval None
+  */
+void module_serial_init()
+{
+	/* Inicia a usart_in */
+	if (USART_pc==USART1) {
+		c_common_usart1_init(USART_BAUDRATE);
+	} else if (USART_pc==USART2) {
+		c_common_usart2_init(USART_BAUDRATE);
+	} else if (USART_pc==USART3) {
+		c_common_usart3_init(USART_BAUDRATE);
+	} else if (USART_pc==USART6) {
+		c_common_usart6_init(USART_BAUDRATE);
+	}
+	/* Inicia a usart_out */
+	if (USART_pc != USART_beagle) { 
+		if (USART_beagle == USART1) {
+			c_common_usart1_init(USART_BAUDRATE);
+		} else if (USART_beagle==USART2) {
+			c_common_usart2_init(USART_BAUDRATE);
+		} else if (USART_beagle==USART3) {
+			c_common_usart3_init(USART_BAUDRATE);
+		} else if (USART_beagle==USART6) {
+			c_common_usart6_init(USART_BAUDRATE);
+		}
+	}
+	//stub();
+//#if SERIAL_TEST
+//	c_io_herkulex_init(USARTin,USART_BAUDRATE);
+//#endif
+
+
+
+	/* Reserva o local de memoria compartilhado */
+	//iEscQueueData = xQueueCreate(1, sizeof(pv_msg_esc));
+	pv_interface_do.iInputData = xQueueCreate(1, sizeof(pv_msg_input));
+
+	/* Pin for debug */
+	//debugPin = c_common_gpio_init(GPIOE, GPIO_Pin_13, GPIO_Mode_OUT);
+	size = 0;
+}
+
 
 /** \brief Função principal do módulo de data out.
   * @param  None
@@ -156,29 +229,55 @@ void module_serial_run()
 #ifdef ENABLE_SONAR
 		float z = iInputData.position.z;
 		c_common_utils_floatToString(z,str,6);
-		c_common_usart_puts(USARTx,str);
+		c_common_usart_puts(USARTout,str);
 #endif
 
 #ifdef ENABLE_IMU
 		float *gyrRaw = iInputData.imuOutput.gyrRaw;
 		c_common_utils_floatToString(gyrRaw[0],str,6);
-		c_common_usart_puts(USARTx,"Roll: ");
-		c_common_usart_puts(USARTx,str);
-		c_common_usart_puts(USARTx,"\n");
+		c_common_usart_puts(USARTout,"Roll: ");
+		c_common_usart_puts(USARTout,str);
+		c_common_usart_puts(USARTout,"\n");
 
 		c_common_utils_floatToString(gyrRaw[1],str,6);
-		c_common_usart_puts(USARTx,"Pitch: ");
-		c_common_usart_puts(USARTx,str);
-		c_common_usart_puts(USARTx,"\n");
+		c_common_usart_puts(USARTout,"Pitch: ");
+		c_common_usart_puts(USARTout,str);
+		c_common_usart_puts(USARTout,"\n");
 
 		c_common_utils_floatToString(gyrRaw[2],str,6);
-		c_common_usart_puts(USARTx,"Yaw: ");
-		c_common_usart_puts(USARTx,str);
-		c_common_usart_puts(USARTx,"\n\n");
+		c_common_usart_puts(USARTout,"Yaw: ");
+		c_common_usart_puts(USARTout,str);
+		c_common_usart_puts(USARTout,"\n\n");
 #endif
 
 		//xQueue
+#ifdef TUNNEL
+		uint16_t buf_size = reads(USART_beagle,BUFFER);
+		if (buf_size) {
+			BUFFER[buf_size] = 0;
+			c_common_usart_puts(USART_pc,BUFFER);
+		}
 
+		buf_size = reads(USART_pc,BUFFER);
+		if (buf_size) {
+			BUFFER[buf_size] = 0;
+			c_common_usart_puts(USART_beagle,BUFFER);
+		}
+#endif
+
+#ifdef ECHO
+		uint16_t buf_size = reads(USART_beagle,BUFFER);
+		if (buf_size) {
+			BUFFER[buf_size] = 0;
+			c_common_usart_puts(USART_beagle,BUFFER);
+		}
+
+		buf_size = reads(USART_pc,BUFFER);
+		if (buf_size) {
+			BUFFER[buf_size] = 0;
+			c_common_usart_puts(USART_pc,BUFFER);
+		}
+#endif
 
 #if TESTE_FINITO
 		if (xKill)
@@ -196,20 +295,6 @@ void module_serial_run()
 	vTaskDelete(NULL);
 }
 
-uint16_t send_queue()
-{
-	uint16_t xStatus = 0, i, queue_size = 1;
-	while (uxQueueMessagesWaiting(pv_interface_serial.iServoOutput)>0)
-	{
-		xStatus = xQueueReceive(pv_interface_serial.iServoOutput,&iServoOutput,1/portTICK_RATE_MS);
-		if (xStatus)
-			add_servo_to_buffer(iServoOutput);
-	}
-	prepare_buffer();
-	send_data(BUFFER[2]+2);
-	clear_buffer();
-	return 0;
-}
 
 
 void add_servo_to_buffer(pv_msg_servo servo_data)
@@ -222,39 +307,6 @@ void add_servo_to_buffer(pv_msg_servo servo_data)
 void clear_buffer(void)
 {
 	size = 0;
-}
-
-uint8_t cksum1(uint8_t buffer[]) {
-  uint8_t i, chksum=0;
-  uint8_t n = BUFFER[2];//-2-> tira o checksum  2->por começar em buffer[2]
-  /* o buffer é passado inteiro, com o cabeçalho */
-  for(i=2;i<n;i++) {
-    chksum=chksum^buffer[i];
-  }
-
-  return chksum&0xFE;
-}
-
-uint8_t cksum2(uint8_t checksum1)
-{
-	return (~checksum1) & 0xFE;
-}
-
-void serialize_servo_msg(pv_msg_servo msg)
-{
-	int msg_size = sizeof(pv_msg_servo);
-	BUFFER[0]=0xFF;
-	BUFFER[1]=0xFF;
-	BUFFER[2]=msg_size+3;
-	memcpy((BUFFER+3),&msg,msg_size);
-	BUFFER[msg_size+3]=cksum1(BUFFER);
-	BUFFER[msg_size+4]=cksum2(BUFFER[msg_size+3]);
-}
-
-void send_data(uint8_t size)
-{
-	for (int i = 0; i < size ; ++i)
-		c_common_usart_putchar(USARTx,BUFFER[i]);
 }
 
 void prepare_buffer(void)

@@ -44,12 +44,14 @@
 /* Exported constants --------------------------------------------------------*/
 #define SERIAL_TEST 0
 #define QUEUE_SIZE 500
+// #define ECHO
+#define TUNNEL
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions ------------------------------------------------------- */
 void module_serial_init();
 void module_serial_run();
-void serialize_esc_msg();
+void serialize_servo_msg();
 void prepare_buffer(void);
 void clear_buffer(void);
 void add_servo_to_buffer(pv_msg_servo servo_data);

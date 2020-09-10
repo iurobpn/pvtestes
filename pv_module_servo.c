@@ -157,23 +157,24 @@ int check_outlier(int new, int sec)
   */
 void module_servo_init()
 {
-	pv_interface_servo.oServoOutput = xQueueCreate(QUEUE_SIZE,
-			sizeof(pv_msg_servo));
+	/* pv_interface_servo.oServoOutput = xQueueCreate(QUEUE_SIZE, */
+	/* 		sizeof(pv_msg_servo)); */
 
-	servo1_id=253;
-	servo2_id=252;
+	/* servo1_id=253; */
+	/* servo2_id=252; */
 
-	c_io_herkulex_init(USARTn,USART_BAUDRATE);
+	/* c_io_herkulex_init(USARTn,USART_BAUDRATE); */
 
-	c_io_herkulex_config(servo1_id);
-	c_io_herkulex_config(servo2_id);
+	/* c_io_herkulex_config(servo1_id); */
+	/* c_io_herkulex_config(servo2_id); */
 
 	//calibrate(servo1_id);
 	//calibrate(servo2_id);
-	uint8_t data = 0;
+	/* uint8_t data = 0; */
 	//set_calibration_difference(servo1_id,data);
-	c_io_herkulex_setPosition(servo2_id,0);
-	c_io_herkulex_setPosition(servo1_id,0);
+	/* c_io_herkulex_setPosition(servo2_id,0); */
+	/* c_io_herkulex_setPosition(servo1_id,0); */
+	c_io_servos_init();
 }
 
 void set_baudrate()
@@ -249,58 +250,58 @@ void module_servo_run()
 		 */
 #if !SERVO_IN_TEST
 
-		if (c_io_herkulex_readData(servo1_id)) {
-			// Aquisição de dados do servo 1
-			oServoMsg[0].heartBeat=heartBeat;
-			new_vel = c_io_herkulex_getVelocity();
-			oServoMsg[0].angularSpeed = new_vel;
-			new_pos = c_io_herkulex_getPosition();
-			oServoMsg[0].position = new_pos;
-			//oServoMsg.status=1;
-			oServoMsg[0].servo_id=servo1_id;
+		/* if (c_io_herkulex_readData(servo1_id)) { */
+		/* 	// Aquisição de dados do servo 1 */
+		/* 	oServoMsg[0].heartBeat=heartBeat; */
+		/* 	new_vel = c_io_herkulex_getVelocity(); */
+		/* 	oServoMsg[0].angularSpeed = new_vel; */
+		/* 	new_pos = c_io_herkulex_getPosition(); */
+		/* 	oServoMsg[0].position = new_pos; */
+		/* 	//oServoMsg.status=1; */
+		/* 	oServoMsg[0].servo_id=servo1_id; */
+        /*  */
+		/* 	status_error = c_io_herkulex_getStatusError(); */
+		/* 	status_detail = c_io_herkulex_getStatusDetail(); */
+        /*  */
+		/* 	if (status_error) { */
+		/* 		//c_io_herkulex_clear(servo1_id); */
+		/* 	} */
+		/* } else { */
+		/* 	data_received = 0; */
+		/* 	// clear servo 1 struct */
+		/* 	oServoMsg[0].angularSpeed=0; */
+		/* 	oServoMsg[0].position=0; */
+		/* 	oServoMsg[0].heartBeat=heartBeat; */
+		/* 	oServoMsg[0].pwm=0; */
+		/* 	//oServoMsg[0].status=0; */
+		/* 	oServoMsg[0].servo_id=servo1_id; */
+		/* } */
 
-			status_error = c_io_herkulex_getStatusError();
-			status_detail = c_io_herkulex_getStatusDetail();
-
-			if (status_error) {
-				//c_io_herkulex_clear(servo1_id);
-			}
-		} else {
-			data_received = 0;
-			// clear servo 1 struct
-			oServoMsg[0].angularSpeed=0;
-			oServoMsg[0].position=0;
-			oServoMsg[0].heartBeat=heartBeat;
-			oServoMsg[0].pwm=0;
-			//oServoMsg[0].status=0;
-			oServoMsg[0].servo_id=servo1_id;
-		}
-
-		if (c_io_herkulex_readData(servo2_id)) {
-			/* Aquisição de dados do servo 1 */
-			oServoMsg[1].heartBeat=heartBeat;
-			oServoMsg[1].angularSpeed = c_io_herkulex_getVelocity();
-			oServoMsg[1].position = c_io_herkulex_getPosition();
-			//oServoMsg.status=1;
-			oServoMsg[1].servo_id=servo2_id;
-			data_counter++;
-			data_received=1;
-			status_error = c_io_herkulex_getStatusError();
-			status_detail = c_io_herkulex_getStatusDetail();
-
-			if (status_error) {
-				//c_io_herkulex_clear(servo2_id);
-			}
-		} else {
-			data_received = 0;
-			/* clear servo 1 struct */
-			oServoMsg[1].angularSpeed=0;
-			oServoMsg[1].position=0;
-			oServoMsg[1].heartBeat=heartBeat;
-			oServoMsg[1].pwm=0;
-			//oServoMsg[0].status=0;
-			oServoMsg[1].servo_id=servo2_id;
-		}
+		/* if (c_io_herkulex_readData(servo2_id)) { */
+		/* 	#<{(| Aquisição de dados do servo 1 |)}># */
+		/* 	oServoMsg[1].heartBeat=heartBeat; */
+		/* 	oServoMsg[1].angularSpeed = c_io_herkulex_getVelocity(); */
+		/* 	oServoMsg[1].position = c_io_herkulex_getPosition(); */
+		/* 	//oServoMsg.status=1; */
+		/* 	oServoMsg[1].servo_id=servo2_id; */
+		/* 	data_counter++; */
+		/* 	data_received=1; */
+		/* 	status_error = c_io_herkulex_getStatusError(); */
+		/* 	status_detail = c_io_herkulex_getStatusDetail(); */
+        /*  */
+		/* 	if (status_error) { */
+		/* 		//c_io_herkulex_clear(servo2_id); */
+		/* 	} */
+		/* } else { */
+		/* 	data_received = 0; */
+		/* 	#<{(| clear servo 1 struct |)}># */
+		/* 	oServoMsg[1].angularSpeed=0; */
+		/* 	oServoMsg[1].position=0; */
+		/* 	oServoMsg[1].heartBeat=heartBeat; */
+		/* 	oServoMsg[1].pwm=0; */
+		/* 	//oServoMsg[0].status=0; */
+		/* 	oServoMsg[1].servo_id=servo2_id; */
+		/* } */
 
 		/* loop de controle
 		//float ref_vel=5;
@@ -345,7 +346,7 @@ void module_servo_run()
 				pos2 = delta_deg;
 			}
 
-			c_io_herkulex_setPosition2Servos(servo1_id, pos1, servo2_id, pos2);
+			/* c_io_herkulex_setPosition2Servos(servo1_id, pos1, servo2_id, pos2); */
 			//c_io_herkulex_setPosition(servo1_id, pos1);
 			//c_io_herkulex_setPosition(servo2_id, pos1);
 			/*
@@ -354,6 +355,7 @@ void module_servo_run()
 			else
 				pwm = 300;
 				*/
+			c_io_servos_writePosition(pos1,pos2);
 		}
 		//c_io_herkulex_setTorque2Servos(servo1_id, pwm,servo2_id,-pwm);
 		//c_io_herkulex_setTorque(servo1_id, pwm);
@@ -373,46 +375,46 @@ void module_servo_run()
 		 * Envio dos dados para o modulo de comunicação
 		 * Verificação da integridade dos pacotes recebidos
 		 */
-		status = c_io_herkulex_getStatus();//indica erros de comunicação
-
-		if (status) {
-			xStatus = xQueueSend(pv_interface_servo.oServoOutput, &oServoMsg[0],
-					1/portTICK_RATE_MS);
-			if (!xStatus)
-				xQueueSend(pv_interface_servo.oServoOutput, &oServoMsg[0],
-						1/portTICK_RATE_MS);
-
-			if (xStatus)
-				queue_data_counter++;
-
-			xStatus = xQueueSend(pv_interface_servo.oServoOutput, &oServoMsg[1],
-							1/portTICK_RATE_MS);
-			if (!xStatus)
-				xQueueSend(pv_interface_servo.oServoOutput, &oServoMsg[1],
-						1/portTICK_RATE_MS);
-
-			if (xStatus)
-				queue_data_counter++;
-		} else
-		{
-			c_io_herkulex_readStatus(servo1_id);
-			status_error=c_io_herkulex_getStatusError();
-			status_detail=c_io_herkulex_getStatusDetail();
-			if (status_error!=0 || status_detail!= 0)
-			{
-				c_io_herkulex_clear(servo1_id);
-			}
-			lost_data_counter++;
-
-			c_io_herkulex_readStatus(servo2_id);
-			status_error=c_io_herkulex_getStatusError();
-			status_detail=c_io_herkulex_getStatusDetail();
-			if (status_error!=0 || status_detail!= 0)
-			{
-				c_io_herkulex_clear(servo2_id);
-			}
-			lost_data_counter++;
-		}
+		/* status = c_io_herkulex_getStatus();//indica erros de comunicação */
+        /*  */
+		/* if (status) { */
+		/* 	xStatus = xQueueSend(pv_interface_servo.oServoOutput, &oServoMsg[0], */
+		/* 			1/portTICK_RATE_MS); */
+		/* 	if (!xStatus) */
+		/* 		xQueueSend(pv_interface_servo.oServoOutput, &oServoMsg[0], */
+		/* 				1/portTICK_RATE_MS); */
+        /*  */
+		/* 	if (xStatus) */
+		/* 		queue_data_counter++; */
+        /*  */
+		/* 	xStatus = xQueueSend(pv_interface_servo.oServoOutput, &oServoMsg[1], */
+		/* 					1/portTICK_RATE_MS); */
+		/* 	if (!xStatus) */
+		/* 		xQueueSend(pv_interface_servo.oServoOutput, &oServoMsg[1], */
+		/* 				1/portTICK_RATE_MS); */
+        /*  */
+		/* 	if (xStatus) */
+		/* 		queue_data_counter++; */
+		/* } else */
+		/* { */
+		/* 	c_io_herkulex_readStatus(servo1_id); */
+		/* 	status_error=c_io_herkulex_getStatusError(); */
+		/* 	status_detail=c_io_herkulex_getStatusDetail(); */
+		/* 	if (status_error!=0 || status_detail!= 0) */
+		/* 	{ */
+		/* 		c_io_herkulex_clear(servo1_id); */
+		/* 	} */
+		/* 	lost_data_counter++; */
+        /*  */
+		/* 	c_io_herkulex_readStatus(servo2_id); */
+		/* 	status_error=c_io_herkulex_getStatusError(); */
+		/* 	status_detail=c_io_herkulex_getStatusDetail(); */
+		/* 	if (status_error!=0 || status_detail!= 0) */
+		/* 	{ */
+		/* 		c_io_herkulex_clear(servo2_id); */
+		/* 	} */
+		/* 	lost_data_counter++; */
+		/* } */
 
 #if TESTE_FINITO
 		/**
@@ -420,8 +422,8 @@ void module_servo_run()
 		 * O tamanho da fila(xQueue) indica o numero de pontos acumulados
 		 */
 		//c_common_utils_delayms(1);=1000
-		uint16_t queue_size = uxQueueMessagesWaiting(
-				pv_interface_servo.oServoOutput);
+		/* uint16_t queue_size = uxQueueMessagesWaiting( */
+		/* 		pv_interface_servo.oServoOutput); */
 		if (queue_size<QUEUE_SIZE)
 		{
 #endif

@@ -11,7 +11,7 @@
 ############################################################################
 
 # project name
-PRJNAME = prj-remote-controlled-flight
+PRJNAME = prj-pvtestes
 
 # toolchain configuration
 TOOLCHAIN_PREFIX = arm-none-eabi-

@@ -23,11 +23,11 @@
     * Se ENABLE_* 1 então tal modulo será utilizado
     *
     */
-#define ENABLE_IMU
-#define ENABLE_SERVO
-#define ENABLE_ESC
-#define ENABLE_SONAR
-#define ENALBE_DEBUG
+// #define ENABLE_IMU
+// #define ENABLE_SERVO
+// #define ENABLE_ESC
+// #define ENABLE_SONAR
+// #define ENABLE_DEBUG
 
  /*Def da IMU*/
 #define ATTITUDE_MINIMUM_STEP	0.01// Radians. Minimum change in angle that is passed to the controller

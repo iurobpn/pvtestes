@@ -129,12 +129,12 @@ void module_in_run()
   	oInputData.position.dotZ = 0;
 
   	/*Inicializa as referencias*/
-  	oInputData.position_refrence.x = 0;
-  	oInputData.position_refrence.y = 0;
-  	oInputData.position_refrence.z = 0;
-  	oInputData.position_refrence.dotX = 0;
-  	oInputData.position_refrence.dotY = 0;
-  	oInputData.position_refrence.dotZ = 0;
+  	oInputData.position_reference.x = 0;
+  	oInputData.position_reference.y = 0;
+  	oInputData.position_reference.z = 0;
+  	oInputData.position_reference.dotX = 0;
+  	oInputData.position_reference.dotY = 0;
+  	oInputData.position_reference.dotZ = 0;
 
   	oInputData.attitude_reference.roll  = 0;
   	oInputData.attitude_reference.pitch = 0;
@@ -165,8 +165,8 @@ void module_in_run()
     //c_io_imu_getBarometerRaw(&pressure,&temperature);
     //temperature=c_io_imu_getTemperature();
     //pressure=c_io_imu_getPressure();
-	//c_io_imu_getRaw(oInputData.imuOutput.accRaw, oInputData.imuOutput.gyrRaw, oInputData.imuOutput.magRaw,sample_time_gyro_us);
-    c_io_imuAdafruit_getRaw(oInputData.imuOutput.accRaw, oInputData.imuOutput.gyrRaw, oInputData.imuOutput.magRaw,sample_time_gyro_us);
+	c_io_imu_getRaw(oInputData.imuOutput.accRaw, oInputData.imuOutput.gyrRaw, oInputData.imuOutput.magRaw,sample_time_gyro_us);
+    /* c_io_imuAdafruit_getRaw(oInputData.imuOutput.accRaw, oInputData.imuOutput.gyrRaw, oInputData.imuOutput.magRaw,sample_time_gyro_us); */
 	c_datapr_MahonyAHRSupdate(attitude_quaternion,oInputData.imuOutput.gyrRaw[0],oInputData.imuOutput.gyrRaw[1],oInputData.imuOutput.gyrRaw[2],oInputData.imuOutput.accRaw[0],oInputData.imuOutput.accRaw[1],oInputData.imuOutput.accRaw[2],oInputData.imuOutput.magRaw[0],oInputData.imuOutput.magRaw[1],oInputData.imuOutput.magRaw[2],sample_time_gyro_us[0]);
 	c_io_imu_Quaternion2Euler(attitude_quaternion, rpy);
 	c_io_imu_EulerMatrix(rpy,oInputData.imuOutput.gyrRaw);
@@ -233,7 +233,7 @@ void module_in_run()
 	}
 	*/
 	oInputData.flightmode=1;
-	oInputData.position_refrence.z= 1.5;
+	oInputData.position_reference.z= 1.5;
 
 	/*Como o canal B da valores 1 ou 100 */
 	if (oInputData.receiverOutput.bButton>50)
@@ -282,8 +282,8 @@ void module_in_run()
 	dotZ_k_minus_1 = dotZ;
 
 	//Filtered measurements
-	//oInputData.position.z = sonar_filtered;
-	oInputData.position.z=sonar_raw_real;
+	oInputData.position.z = sonar_filtered;
+	/* oInputData.position.z=sonar_raw_real; */
 	oInputData.position.dotZ = dotZ_filtered;
     #endif
 
